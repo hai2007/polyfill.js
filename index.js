@@ -1,0 +1,3 @@
+
+// Promise
+import './promise.js';

@@ -1,0 +1,31 @@
+{
+  "name": "@hai2007/polyfill",
+  "version": "0.0.0",
+  "description": "✔️ 为旧浏览器提供一些常用的原生新功能支持。",
+  "main": "./dist/polyfill.min.js",
+  "scripts": {
+    "start": "npm install && npm run build",
+    "build": "npm run rollup && npm run uglifyjs && hai2007_nodejs --config ./hai2007_nodejs.config.js",
+    "rollup": "rollup --config rollup.config.js",
+    "uglifyjs": "uglifyjs ./dist/polyfill.js -m -o ./dist/polyfill.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hai2007/polyfill.js.git"
+  },
+  "keywords": [
+    "hai2007",
+    "polyfill"
+  ],
+  "author": "你好2007",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hai2007/polyfill.js/issues"
+  },
+  "homepage": "https://github.com/hai2007/polyfill.js#readme",
+  "devDependencies": {
+    "@hai2007/nodejs": "^1.0.0",
+    "rollup": "^1.17.0",
+    "uglify-js": "^3.10.2"
+  }
+}
