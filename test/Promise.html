@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Promise测试</title>
+    <script>
+
+        // 先废除浏览器本身的，方便测试
+        delete window.Promise;
+
+    </script>
+    <script src="../dist/polyfill.js"></script>
+</head>
+
+<body>
+
+    <!-- new方式的常规用法 -->
+    <script>
+        new Promise(function (resolve, reject) {
+
+            setTimeout(function () {
+
+                resolve('成功了');
+
+            }, 1000);
+
+        })
+
+            // 1
+            .then(function (data) {
+
+                console.log('then1', data);
+
+            }, function (error) {
+
+                console.error('then2', error);
+
+            })
+
+            // 2
+            .catch(function (error) {
+
+                console.error('catch', error);
+
+            })
+
+            // 3
+            .finally(function () {
+
+                console.warn('finally');
+
+            });
+
+    </script>
+
+</body>
+
+</html>

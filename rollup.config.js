@@ -11,5 +11,21 @@ export default {
          * umd – 通用模块定义，以 amd，cjs 和 iife 为一体
          */
         format: 'iife'
-    }
+    },
+    plugins: [
+
+        // 帮助 Rollup 查找外部模块，然后安装
+        require('rollup-plugin-node-resolve')({
+            customResolveOptions: {
+                moduleDirectory: 'node_modules'
+            }
+        }),
+
+        // 将CommonJS模块转换为 ES2015 供 Rollup 处理
+        require('rollup-plugin-commonjs')({
+            include: "node_modules/**",
+            exclude: []
+        })
+
+    ]
 };
