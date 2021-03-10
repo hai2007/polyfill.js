@@ -52,6 +52,20 @@ export var triggerEvent = function () {
                 result.__hocks.push(this.__hocks[i]);
                 if (result.__state != 'pending') result.$$triggerEvent();
             }
+
+            this.then = function (onFulfilled, onRejected) {
+
+                result.then(onFulfilled, onRejected);
+            };
+            this.catch = function (onRejected) {
+
+                result.catch(onRejected);
+            };
+            this.finally = function (callback) {
+
+                result.finally(callback);
+            };
+
         }
 
         // 否则
@@ -84,7 +98,7 @@ export var doResolve = function (doback, that) {
         });
     } catch (error) {
         if (done) return; done = true;
-        that.$$changeState(reason, 'rejected');
+        that.$$changeState(error, 'rejected');
     }
 
 };

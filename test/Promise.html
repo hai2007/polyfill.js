@@ -9,7 +9,7 @@
     <script>
 
         // 先废除浏览器本身的，方便测试
-        delete window.Promise;
+        // delete window.Promise;
 
     </script>
     <script src="../dist/polyfill.js"></script>
@@ -23,7 +23,7 @@
         // .catch() 其实只是没有给 handleFulfilled 预留参数位置的 .then() 而已
         // 一旦状态确定了，会按照顺序一层层拨开
 
-        new Promise(function (resolve, reject) {
+        window.p001 = new Promise(function (resolve, reject) {
 
             setTimeout(function () {
 
@@ -154,6 +154,34 @@
             console.warn('finally', result);
 
         });
+
+    </script>
+
+    <script>
+
+        console.log("=======================\n <!-- Promise.all -->\n=======================");
+
+        var p1 = new Promise((resolve, reject) => {
+            resolve('成功了')
+        })
+
+        var p2 = new Promise((resolve, reject) => {
+            resolve('success')
+        })
+
+        var p3 = Promise.reject('失败')
+
+        Promise.all([p1, p2]).then((result) => {
+            console.log(result)               //['成功了', 'success']
+        }).catch((error) => {
+            console.log(error)
+        })
+
+        Promise.all([p1, p3, p2]).then((result) => {
+            console.log(result)
+        }).catch((error) => {
+            console.log(error)      // 失败了，打出 '失败'
+        })
 
     </script>
 

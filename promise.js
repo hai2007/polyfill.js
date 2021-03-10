@@ -1,5 +1,5 @@
 import globalNAMESPACE from './.inner/globalNAMESPACE';
-import { isFunction, isObject } from '@hai2007/tool/type';
+import { isFunction, isObject,isArray } from '@hai2007/tool/type';
 import { doResolve, changeState, triggerEvent } from './.inner/Promise/doResolve';
 
 function Promise(doback) {
@@ -48,6 +48,9 @@ Promise.prototype.$$triggerEvent = triggerEvent;
 Promise.prototype.then = function (onFulfilled, onRejected) {
 
     this.__hocks.push([onFulfilled, onRejected, undefined]);
+
+    if(this.__state!='pending'){ this.$$triggerEvent(); }
+
     return this;
 
 };
@@ -60,6 +63,9 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
 Promise.prototype.catch = function (onRejected) {
 
     this.__hocks.push([undefined, onRejected, undefined]);
+
+    if(this.__state!='pending'){ this.$$triggerEvent(); }
+
     return this;
 
 };
@@ -72,6 +78,9 @@ Promise.prototype.catch = function (onRejected) {
 Promise.prototype.finally = function (callback) {
 
     this.__hocks.push([undefined, undefined, callback]);
+
+    if(this.__state!='pending'){ this.$$triggerEvent(); }
+
     return this;
 
 
@@ -122,26 +131,36 @@ Promise.reject = function (reason) {
 // Promise.all方法常被用于处理多个promise对象的状态集合.
 Promise.all = function (iterable) {
 
+    return new Promise(function(resolve,reject){
+
+        if(!isArray(iterable)){
+            return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
+        }
+
+        // todo
+
+    });
+
 };
 
 // 等到所有promises都已敲定（settled）（每个promise都已兑现（fulfilled）或已拒绝（rejected））。
 // 返回一个promise，该promise在所有promise完成后完成。并带有一个对象数组，每个对象对应每个promise的结果。
 Promise.allSettled = function (iterable) {
-
+    debugger
 };
 
 // 接收一个Promise对象的集合，
 // 当其中的一个 promise 成功，
 // 就返回那个成功的promise的值。
 Promise.any = function (iterable) {
-
+    debugger
 };
 
 // 当iterable参数里的任意一个子promise被成功或失败后，
 // 父promise马上也会用子promise的成功返回值或失败详情作为参数调用父promise绑定的相应句柄，
 // 并返回该promise对象。
 Promise.race = function (iterable) {
-
+    debugger
 };
 
 // 如果Promise不存在
