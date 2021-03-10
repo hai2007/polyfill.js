@@ -1,5 +1,15 @@
+/*!
+ * ✔️ - Promise
+ * https://github.com/hai2007/polyfill.js/blob/master/Promise.js
+ *
+ * author hai2007 < https://hai2007.gitee.io/sweethome >
+ *
+ * Copyright (c) 2021-present hai2007 走一步，再走一步。
+ * Released under the MIT license
+ */
+
 import globalNAMESPACE from './.inner/globalNAMESPACE';
-import { isFunction, isObject,isArray } from '@hai2007/tool/type';
+import { isFunction, isObject, isArray } from '@hai2007/tool/type';
 import { doResolve, changeState, triggerEvent } from './.inner/Promise/doResolve';
 
 function Promise(doback) {
@@ -49,7 +59,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
 
     this.__hocks.push([onFulfilled, onRejected, undefined]);
 
-    if(this.__state!='pending'){ this.$$triggerEvent(); }
+    if (this.__state != 'pending') { this.$$triggerEvent(); }
 
     return this;
 
@@ -64,7 +74,7 @@ Promise.prototype.catch = function (onRejected) {
 
     this.__hocks.push([undefined, onRejected, undefined]);
 
-    if(this.__state!='pending'){ this.$$triggerEvent(); }
+    if (this.__state != 'pending') { this.$$triggerEvent(); }
 
     return this;
 
@@ -79,7 +89,7 @@ Promise.prototype.finally = function (callback) {
 
     this.__hocks.push([undefined, undefined, callback]);
 
-    if(this.__state!='pending'){ this.$$triggerEvent(); }
+    if (this.__state != 'pending') { this.$$triggerEvent(); }
 
     return this;
 
@@ -131,9 +141,9 @@ Promise.reject = function (reason) {
 // Promise.all方法常被用于处理多个promise对象的状态集合.
 Promise.all = function (iterable) {
 
-    return new Promise(function(resolve,reject){
+    return new Promise(function (resolve, reject) {
 
-        if(!isArray(iterable)){
+        if (!isArray(iterable)) {
             return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
         }
 
