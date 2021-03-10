@@ -4,12 +4,12 @@
  *
  * author 你好2007 < https://hai2007.gitee.io/sweethome >
  *
- * version 0.1.0-alpha.2
+ * version 0.1.0-beta
  *
  * Copyright (c) 2021-present hai2007 走一步，再走一步。
  * Released under the MIT license
  *
- * Date:Wed Mar 10 2021 17:49:22 GMT+0800 (GMT+08:00)
+ * Date:Wed Mar 10 2021 23:06:22 GMT+0800 (GMT+08:00)
  */
 (function () {
     'use strict';
@@ -187,6 +187,16 @@
 
     };
 
+    /*!
+     * ✔️ - Promise
+     * https://github.com/hai2007/polyfill.js/blob/master/Promise.js
+     *
+     * author hai2007 < https://hai2007.gitee.io/sweethome >
+     *
+     * Copyright (c) 2021-present hai2007 走一步，再走一步。
+     * Released under the MIT license
+     */
+
     function Promise(doback) {
 
         if (!(this instanceof Promise)) {
@@ -234,7 +244,7 @@
 
         this.__hocks.push([onFulfilled, onRejected, undefined]);
 
-        if(this.__state!='pending'){ this.$$triggerEvent(); }
+        if (this.__state != 'pending') { this.$$triggerEvent(); }
 
         return this;
 
@@ -249,7 +259,7 @@
 
         this.__hocks.push([undefined, onRejected, undefined]);
 
-        if(this.__state!='pending'){ this.$$triggerEvent(); }
+        if (this.__state != 'pending') { this.$$triggerEvent(); }
 
         return this;
 
@@ -264,7 +274,7 @@
 
         this.__hocks.push([undefined, undefined, callback]);
 
-        if(this.__state!='pending'){ this.$$triggerEvent(); }
+        if (this.__state != 'pending') { this.$$triggerEvent(); }
 
         return this;
 
@@ -316,13 +326,40 @@
     // Promise.all方法常被用于处理多个promise对象的状态集合.
     Promise.all = function (iterable) {
 
-        return new Promise(function(resolve,reject){
+        return new Promise(function (resolve, reject) {
 
-            if(!isArray(iterable)){
+            if (!isArray(iterable)) {
                 return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
             }
 
-            // todo
+            var resultData = Array.prototype.slice.call(iterable), num = 0;
+
+            var doHelp = function (index, item) {
+                if (item.__state !== "pending") {
+
+                    num += 1;
+
+                    if (item.__state == 'rejected') {
+
+                        // 如果遇到第一个失败的，拒绝即可
+                        reject(item.__value);
+                    } else {
+
+                        resultData[index] = item.__value;
+
+                        if (num == resultData.length) {
+                            resolve(resultData);
+                        }
+                    }
+
+                } else {
+                    setTimeout(function () { doHelp(index, item); });
+                }
+            };
+
+            for (var i = 0; i < resultData.length; i++) {
+                doHelp(i, resultData[i]);
+            }
 
         });
 
@@ -331,21 +368,121 @@
     // 等到所有promises都已敲定（settled）（每个promise都已兑现（fulfilled）或已拒绝（rejected））。
     // 返回一个promise，该promise在所有promise完成后完成。并带有一个对象数组，每个对象对应每个promise的结果。
     Promise.allSettled = function (iterable) {
-        debugger
-    };
 
-    // 接收一个Promise对象的集合，
+        return new Promise(function (resolve, reject) {
+
+            if (!isArray(iterable)) {
+                return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
+            }
+
+            var resultData = Array.prototype.slice.call(iterable), num = 0;
+
+            var doHelp = function (index, item) {
+                if (item.__state !== "pending") {
+
+                    num += 1;
+
+                    resultData[index] = {
+                        status: item.__state
+                    };
+
+                    if (item.__state == 'fulfilled') {
+                        resultData[index].value = item.__value;
+                    } else {
+                        resultData[index].reason = item.__value;
+                    }
+
+                    if (num == resultData.length) {
+                        resolve(resultData);
+                    }
+
+                } else {
+                    setTimeout(function () { doHelp(index, item); });
+                }
+            };
+
+            for (var i = 0; i < resultData.length; i++) {
+                doHelp(i, resultData[i]);
+            }
+
+        });
+
+    };
+    // 收一个Promise对象的集合，
     // 当其中的一个 promise 成功，
     // 就返回那个成功的promise的值。
     Promise.any = function (iterable) {
-        debugger
+
+        return new Promise(function (resolve, reject) {
+
+            if (!isArray(iterable)) {
+                return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
+            }
+
+            var num = 0;
+
+            var doHelp = function (index, item) {
+                if (item.__state !== "pending") {
+
+                    num += 1;
+
+                    if (item.__state == 'rejected') {
+
+                        if (num == iterable.length) {
+
+                            // 为了兼容性，我们放弃AggregateError
+                            return reject(new Error('All promises were rejected'));
+                        }
+
+                    } else {
+
+                        // 遇到第一个成功的，标记解决即可
+                        resolve(item.__value);
+
+                    }
+
+                } else {
+                    setTimeout(function () { doHelp(index, item); });
+                }
+            };
+
+            for (var i = 0; i < iterable.length; i++) {
+                doHelp(i, iterable[i]);
+            }
+
+        });
     };
 
     // 当iterable参数里的任意一个子promise被成功或失败后，
     // 父promise马上也会用子promise的成功返回值或失败详情作为参数调用父promise绑定的相应句柄，
     // 并返回该promise对象。
     Promise.race = function (iterable) {
-        debugger
+
+        return new Promise(function (resolve, reject) {
+
+            if (!isArray(iterable)) {
+                return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
+            }
+
+            var doHelp = function (index, item) {
+                if (item.__state !== "pending") {
+
+                    if (item.__state == 'rejected') {
+                        reject(item.__value);
+                    } else {
+                        resolve(item.__value);
+                    }
+
+                } else {
+                    setTimeout(function () { doHelp(index, item); });
+                }
+            };
+
+            for (var i = 0; i < iterable.length; i++) {
+                doHelp(i, iterable[i]);
+            }
+
+        });
     };
 
     // 如果Promise不存在
