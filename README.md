@@ -24,7 +24,7 @@ npm install --save @hai2007/polyfill
 - Promise
 
 ```
-import '@hai2007/polyfill/promise.js';
+import '@hai2007/polyfill/Promise.js';
 ```
 
 开源协议

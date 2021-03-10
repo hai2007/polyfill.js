@@ -17,13 +17,20 @@
 
 <body>
 
-    <!-- new方式的常规用法 -->
     <script>
+
+
+        // .catch() 其实只是没有给 handleFulfilled 预留参数位置的 .then() 而已
+        // 一旦状态确定了，会按照顺序一层层拨开
+
         new Promise(function (resolve, reject) {
 
             setTimeout(function () {
 
-                resolve('成功了');
+                console.log("=======================\n <!-- new方式的常规用法 -->\n=======================");
+
+                // resolve('成功了');
+                reject('拒绝了');
 
             }, 1000);
 
@@ -34,25 +41,119 @@
 
                 console.log('then1', data);
 
-            }, function (error) {
+                // console.log(this);
+                // debugger
 
-                console.error('then2', error);
+                return 'then1-return';
 
-            })
+            },
+                function (error) {
+
+                    console.error('then1', error);
+
+                    // console.log(this);
+                    // debugger
+
+                    return Promise.reject('静态方法拒绝了');
+                    // return Promise.resolve('静态方法同意了');
+                    // debugger
+                    // return dd;
+                    // return '静态方法同意了 return';
+
+                }
+            )
+
+
 
             // 2
             .catch(function (error) {
 
                 console.error('catch', error);
+                return '捕获错误方法';
+                // var dd= Promise.reject('捕获错误方法拒绝了');
+                // console.log(typeof dd);
+                // debugger
+                // return dd;
 
             })
 
-            // 3
-            .finally(function () {
+            .finally(function (result) {
 
-                console.warn('finally');
+                console.warn('finally（提前的）1', result);
+
+            })
+            .finally(function (result) {
+
+                console.warn('finally（提前的）2', result);
+
+            })
+
+            // 1-1
+            .then(function (data) {
+
+                console.log('then 1-1', data);
+
+                return 'then 1-1 兑现';
+
+            },
+                function (error) {
+
+                    console.error('then 1-1', error);
+
+                    return 'then 1-1 拒绝';
+
+                })
+
+            // 3
+            .finally(function (result) {
+
+                console.warn('finally', result);
 
             });
+
+    </script>
+
+    <script>
+
+        // 一旦返回Promise对象，后续挂载的相对于挂到这个Promise中
+
+        new Promise(function (resolve, reject) {
+
+            setTimeout(function () {
+
+                console.log("=======================\n <!-- 如果中途返回的是一个Promise对象 -->\n=======================");
+
+                resolve('成功了');
+
+            }, 2000);
+
+        }).then(function (data) {
+
+            console.log('1', data);
+
+            return new Promise(function (resolve2) {
+
+                setTimeout(function () {
+                    resolve2('返回的Promise同意了');
+                }, 1000);
+
+            }).then(function (data) {
+
+                console.log('返回的Promise本身的then', data);
+
+                return '返回的Promise本身的then的返回值';
+
+            });
+
+        }).then(function (data) {
+
+            console.log('2', data);
+
+        }).finally(function (result) {
+
+            console.warn('finally', result);
+
+        });
 
     </script>
 

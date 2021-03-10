@@ -1,6 +1,6 @@
 {
   "name": "@hai2007/polyfill",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "✔️ 为旧浏览器提供一些常用的原生新功能支持。",
   "main": "./dist/polyfill.min.js",
   "scripts": {

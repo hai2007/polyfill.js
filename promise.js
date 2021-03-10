@@ -1,6 +1,6 @@
 import globalNAMESPACE from './.inner/globalNAMESPACE';
-import { isFunction } from '@hai2007/tool/type';
-import doResolve from './.inner/Promise/doResolve';
+import { isFunction, isObject } from '@hai2007/tool/type';
+import { doResolve, changeState, triggerEvent } from './.inner/Promise/doResolve';
 
 function Promise(doback) {
 
@@ -14,12 +14,29 @@ function Promise(doback) {
         throw new TypeError('Promise resolver ' + doback + ' is not a function');
     }
 
-    // 参数初始化
+    /**
+     * 参数初始化
+     */
 
+    // 当前的值
+    this.__value = undefined;
 
-    // 准备完毕以后，开始处理
+    // 记录着由于then，catch或finally登记的方法
+    // Array<onFulfilled|undefined, onRejected|undefined, callback|undefined>
+    this.__hocks = [];
+
+    // 状态
+    this.__state = 'pending';
+
+    /**
+     * 准备完毕以后，开始处理
+     */
     doResolve(doback, this);
 }
+
+// 添加辅助方法
+Promise.prototype.$$changeState = changeState;
+Promise.prototype.$$triggerEvent = triggerEvent;
 
 /**
  * 原型上的方法
@@ -30,6 +47,9 @@ function Promise(doback) {
 // 将以回调的返回值来resolve。
 Promise.prototype.then = function (onFulfilled, onRejected) {
 
+    this.__hocks.push([onFulfilled, onRejected, undefined]);
+    return this;
+
 };
 
 // 添加一个拒绝(rejection) 回调到当前 promise, 返回一个新的promise。
@@ -39,6 +59,9 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
 // 则以当前promise的完成结果作为新promise的完成结果。
 Promise.prototype.catch = function (onRejected) {
 
+    this.__hocks.push([undefined, onRejected, undefined]);
+    return this;
+
 };
 
 // 添加一个事件处理回调于当前promise对象，
@@ -47,6 +70,10 @@ Promise.prototype.catch = function (onRejected) {
 // 回调会在当前promise运行完毕后被调用，
 // 无论当前promise的状态是完成(fulfilled)还是失败(rejected)。
 Promise.prototype.finally = function (callback) {
+
+    this.__hocks.push([undefined, undefined, callback]);
+    return this;
+
 
 };
 
@@ -64,11 +91,23 @@ Promise.prototype.finally = function (callback) {
 // 这样就能将该value以Promise对象形式使用。
 Promise.resolve = function (value) {
 
+    if (isObject(value) && value.constructor === Promise) {
+        return value;
+    }
+
+    return new Promise(function (resolve) {
+        resolve(value);
+    });
+
 };
 
 // 返回一个状态为失败的Promise对象，
 // 并将给定的失败信息传递给对应的处理方法。
 Promise.reject = function (reason) {
+
+    return new Promise(function (resolve, reject) {
+        reject(reason);
+    });
 
 };
 

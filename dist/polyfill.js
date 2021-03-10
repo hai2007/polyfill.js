@@ -4,12 +4,12 @@
  *
  * author 你好2007 < https://hai2007.gitee.io/sweethome >
  *
- * version 0.0.0
+ * version 0.1.0-alpha.0
  *
  * Copyright (c) 2021-present hai2007 走一步，再走一步。
  * Released under the MIT license
  *
- * Date:Tue Mar 09 2021 15:55:40 GMT+0800 (GMT+08:00)
+ * Date:Wed Mar 10 2021 16:37:11 GMT+0800 (GMT+08:00)
  */
 (function () {
     'use strict';
@@ -68,8 +68,109 @@
             type === '[object GeneratorFunction]' || type === '[object Proxy]';
     }
 
+    /*!
+     * 💡 - 值类型判断方法
+     * https://github.com/hai2007/tool.js/blob/master/type.js
+     *
+     * author hai2007 < https://hai2007.gitee.io/sweethome >
+     *
+     * Copyright (c) 2020-present hai2007 走一步，再走一步。
+     * Released under the MIT license
+     */
+
+    var isObject = _isObject;
+
     // 引用类型
     var isFunction = _isFunction;
+
+    var changeState = function (data, state) {
+
+        // 更改状态
+        this.__state = state;
+        this.__value = data;
+
+        // 由于状态改变了，触发对then，finnaly，catch等的执行更新
+        this.$$triggerEvent();
+
+    };
+
+    var triggerEvent = function () {
+
+        // 这个方法的任务就是把__hocks中记录的方法依次执行了
+        // 什么时候会停止？两种情况：
+        // 1.队列执行完了
+        // 2.遇到其中一个执行方法返回Promise
+
+        var currentHock = null;
+
+        // 同意状态就去寻找下一个onFulfilled
+        // 拒绝状态就去寻找下一个onRejected
+        // 数组下标0和1分别记录这两个状态，因此先根据状态确定下标即可
+        var index = this.__state == 'fulfilled' ? 0 : 1, i;
+
+        // 可能找到，可能到结尾都没有找到
+        while (this.__hocks.length > 0) {
+
+            if (isFunction(this.__hocks[0][index])) {
+                currentHock = this.__hocks.shift();
+                break;
+            }
+
+            // 对于路过的finally执行一下
+            else if (isFunction(this.__hocks[0][2])) {
+                this.__hocks[0][2]();
+            }
+
+            this.__hocks.shift();
+
+        }
+
+        // 如果找到了
+        if (currentHock !== null) {
+            var result = currentHock[index](this.__value);
+
+            // 如果是Promise
+            if (isObject(result) && result.constructor === this.constructor) {
+                for (var i = 0; i < this.__hocks.length; i++) {
+                    result.__hocks.push(this.__hocks[i]);
+                    if (result.__state != 'pending') result.$$triggerEvent();
+                }
+            }
+
+            // 否则
+            else {
+
+                this.__value = result;
+                this.__state = "fulfilled";
+                this.$$triggerEvent();
+
+            }
+
+        }
+
+    };
+
+    var doResolve = function (doback, that) {
+
+        // 防止重复修改状态
+        var done = false;
+
+        try {
+            doback(function (value) {
+                if (done) return; done = true;
+                that.$$changeState(value, 'fulfilled');
+
+            }, function (reason) {
+                if (done) return; done = true;
+                that.$$changeState(reason, 'rejected');
+
+            });
+        } catch (error) {
+            if (done) return; done = true;
+            that.$$changeState(reason, 'rejected');
+        }
+
+    };
 
     function Promise(doback) {
 
@@ -82,7 +183,30 @@
         if (!(isFunction(doback))) {
             throw new TypeError('Promise resolver ' + doback + ' is not a function');
         }
+
+        /**
+         * 参数初始化
+         */
+
+        // 当前的值
+        this.__value = undefined;
+
+        // 记录着由于then，catch或finally登记的方法
+        // Array<onFulfilled|undefined, onRejected|undefined, callback|undefined>
+        this.__hocks = [];
+
+        // 状态
+        this.__state = 'pending';
+
+        /**
+         * 准备完毕以后，开始处理
+         */
+        doResolve(doback, this);
     }
+
+    // 添加辅助方法
+    Promise.prototype.$$changeState = changeState;
+    Promise.prototype.$$triggerEvent = triggerEvent;
 
     /**
      * 原型上的方法
@@ -93,6 +217,9 @@
     // 将以回调的返回值来resolve。
     Promise.prototype.then = function (onFulfilled, onRejected) {
 
+        this.__hocks.push([onFulfilled, onRejected, undefined]);
+        return this;
+
     };
 
     // 添加一个拒绝(rejection) 回调到当前 promise, 返回一个新的promise。
@@ -102,6 +229,9 @@
     // 则以当前promise的完成结果作为新promise的完成结果。
     Promise.prototype.catch = function (onRejected) {
 
+        this.__hocks.push([undefined, onRejected, undefined]);
+        return this;
+
     };
 
     // 添加一个事件处理回调于当前promise对象，
@@ -110,6 +240,10 @@
     // 回调会在当前promise运行完毕后被调用，
     // 无论当前promise的状态是完成(fulfilled)还是失败(rejected)。
     Promise.prototype.finally = function (callback) {
+
+        this.__hocks.push([undefined, undefined, callback]);
+        return this;
+
 
     };
 
@@ -127,11 +261,23 @@
     // 这样就能将该value以Promise对象形式使用。
     Promise.resolve = function (value) {
 
+        if (isObject(value) && value.constructor === Promise) {
+            return value;
+        }
+
+        return new Promise(function (resolve) {
+            resolve(value);
+        });
+
     };
 
     // 返回一个状态为失败的Promise对象，
     // 并将给定的失败信息传递给对应的处理方法。
     Promise.reject = function (reason) {
+
+        return new Promise(function (resolve, reject) {
+            reject(reason);
+        });
 
     };
 

@@ -1,3 +1,3 @@
 
 // Promise
-import './promise.js';
+import './Promise.js';
