@@ -4,12 +4,12 @@
  *
  * author 你好2007 < https://hai2007.gitee.io/sweethome >
  *
- * version 0.1.0
+ * version 0.1.1
  *
  * Copyright (c) 2021-present hai2007 走一步，再走一步。
  * Released under the MIT license
  *
- * Date:Wed Mar 10 2021 23:16:34 GMT+0800 (GMT+08:00)
+ * Date:Thu Mar 11 2021 15:04:05 GMT+0800 (GMT+08:00)
  */
 (function () {
     'use strict';
@@ -334,6 +334,8 @@
 
             var resultData = Array.prototype.slice.call(iterable), num = 0;
 
+            if (resultData.length == 0) resolve([]);
+
             var doHelp = function (index, item) {
                 if (item.__state !== "pending") {
 
@@ -376,6 +378,8 @@
             }
 
             var resultData = Array.prototype.slice.call(iterable), num = 0;
+
+            if (resultData.length == 0) resolve([]);
 
             var doHelp = function (index, item) {
                 if (item.__state !== "pending") {
@@ -421,6 +425,8 @@
 
             var num = 0;
 
+            if (iterable.length == 0) resolve(undefined);
+
             var doHelp = function (index, item) {
                 if (item.__state !== "pending") {
 
@@ -463,6 +469,8 @@
             if (!isArray(iterable)) {
                 return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
             }
+
+            if (iterable.length == 0) resolve(undefined);
 
             var doHelp = function (index, item) {
                 if (item.__state !== "pending") {

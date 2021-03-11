@@ -149,6 +149,8 @@ Promise.all = function (iterable) {
 
         var resultData = Array.prototype.slice.call(iterable), num = 0;
 
+        if (resultData.length == 0) resolve([]);
+
         var doHelp = function (index, item) {
             if (item.__state !== "pending") {
 
@@ -191,6 +193,8 @@ Promise.allSettled = function (iterable) {
         }
 
         var resultData = Array.prototype.slice.call(iterable), num = 0;
+
+        if (resultData.length == 0) resolve([]);
 
         var doHelp = function (index, item) {
             if (item.__state !== "pending") {
@@ -236,6 +240,8 @@ Promise.any = function (iterable) {
 
         var num = 0;
 
+        if (iterable.length == 0) resolve(undefined);
+
         var doHelp = function (index, item) {
             if (item.__state !== "pending") {
 
@@ -278,6 +284,8 @@ Promise.race = function (iterable) {
         if (!isArray(iterable)) {
             return reject(new TypeError('undefined is not iterable (cannot read property Symbol(Symbol.iterator))'));
         }
+
+        if (iterable.length == 0) resolve(undefined);
 
         var doHelp = function (index, item) {
             if (item.__state !== "pending") {

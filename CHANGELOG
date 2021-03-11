@@ -3,3 +3,7 @@ v0.1.0:
     changes:
       -  初始化版本
       -  添加Promise兼容文件
+v0.1.1:
+    date:2021-03-11
+    changes:
+      -  修复Promise.all等对于空数组的处理问题
